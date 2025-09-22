@@ -63,10 +63,10 @@ class IGDBGame(BaseModel):
     name: str
     summary: Optional[str] = None
     first_release_date: Optional[int] = None
-    platforms: Optional[List[Dict[str, Any]]] = None
-    genres: Optional[List[Dict[str, Any]]] = None
-    involved_companies: Optional[List[Dict[str, Any]]] = None
-    cover: Optional[Dict[str, Any]] = None
+    platforms: Optional[List[int]] = None  # IGDB returns platform IDs as integers
+    genres: Optional[List[int]] = None     # IGDB returns genre IDs as integers
+    involved_companies: Optional[List[int]] = None  # IGDB returns company IDs as integers
+    cover: Optional[int] = None            # IGDB returns cover ID as integer
     rating: Optional[float] = None
     rating_count: Optional[int] = None
 

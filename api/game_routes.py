@@ -108,7 +108,7 @@ async def import_from_igdb(igdb_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Game not found on IGDB")
     
     # Convert to our model format
-    game_data = igdb_service.convert_to_game_model(igdb_game)
+    game_data = await igdb_service.convert_to_game_model(igdb_game)
     game_data["igdb_id"] = igdb_id
     
     # Create game in database

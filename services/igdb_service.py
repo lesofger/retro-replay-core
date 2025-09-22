@@ -54,7 +54,7 @@ class IGDBService:
     async def search_games(self, query: str, limit: int = 20) -> List[IGDBGame]:
         """Search for games by name"""
         search_query = f'search "{query}"; fields id,name,summary,first_release_date,platforms,genres,involved_companies,cover,rating,rating_count; limit {limit};'
-        
+
         try:
             results = await self._make_request("games", search_query)
             return [IGDBGame(**game) for game in results]
@@ -95,7 +95,7 @@ class IGDBService:
             print(f"Error getting genres: {e}")
             return []
 
-    def convert_to_game_model(self, igdb_game: IGDBGame) -> Dict[str, Any]:
+    async def convert_to_game_model(self, igdb_game: IGDBGame) -> Dict[str, Any]:
         """Convert IGDB game to our game model format"""
         from datetime import datetime
         
@@ -107,27 +107,48 @@ class IGDBService:
         # Extract platform names
         platforms = []
         if igdb_game.platforms:
-            # Note: This would need platform details from a separate API call
-            platforms = ["Unknown"]  # Placeholder
+            try:
+                platform_query = f"fields id,name; where id = ({','.join(map(str, igdb_game.platforms))});"
+                platform_results = await self._make_request("platforms", platform_query)
+                platforms = [platform.get("name", "Unknown") for platform in platform_results]
+            except Exception as e:
+                print(f"Error fetching platform details: {e}")
+                platforms = ["Unknown"] * len(igdb_game.platforms)
         
         # Extract genre names
         genres = []
         if igdb_game.genres:
-            # Note: This would need genre details from a separate API call
-            genres = ["Unknown"]  # Placeholder
+            try:
+                genre_query = f"fields id,name; where id = ({','.join(map(str, igdb_game.genres))});"
+                genre_results = await self._make_request("genres", genre_query)
+                genres = [genre.get("name", "Unknown") for genre in genre_results]
+            except Exception as e:
+                print(f"Error fetching genre details: {e}")
+                genres = ["Unknown"] * len(igdb_game.genres)
         
         # Extract company names
         developers = []
         publishers = []
         if igdb_game.involved_companies:
-            # Note: This would need company details from a separate API call
-            developers = ["Unknown"]  # Placeholder
-            publishers = ["Unknown"]  # Placeholder
+            try:
+                company_query = f"fields id,name,developer,publisher; where id = ({','.join(map(str, igdb_game.involved_companies))});"
+                company_results = await self._make_request("involved_companies", company_query)
+                
+                for company in company_results:
+                    company_name = company.get("name", "Unknown")
+                    if company.get("developer", False):
+                        developers.append(company_name)
+                    if company.get("publisher", False):
+                        publishers.append(company_name)
+            except Exception as e:
+                print(f"Error fetching company details: {e}")
+                developers = ["Unknown"]
+                publishers = ["Unknown"]
         
         # Get cover image URL
         cover_image_url = None
         if igdb_game.cover:
-            cover_image_url = f"https://images.igdb.com/igdb/image/upload/t_cover_big/{igdb_game.cover.get('image_id', '')}.jpg"
+            cover_image_url = f"https://images.igdb.com/igdb/image/upload/t_cover_big/{igdb_game.cover}.jpg"
         
         return {
             "title": igdb_game.name,
