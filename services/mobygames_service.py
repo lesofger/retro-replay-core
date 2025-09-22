@@ -1,4 +1,5 @@
 import httpx
+import asyncio
 from typing import List, Optional, Dict, Any
 from config import settings
 from models.game_models import MobyGamesGame
@@ -12,37 +13,55 @@ class MobyGamesService:
         """Search for games by name"""
         async with httpx.AsyncClient() as client:
             try:
+                # Truncate query to 128 characters as per API limits
+                search_query = query[:128] if len(query) > 128 else query
+                
+                # Add small delay to avoid rate limiting
+                await asyncio.sleep(0.1)
+                
+                # Try basic search first without limit parameter
                 response = await client.get(
                     f"{self.base_url}/games",
                     params={
                         "api_key": self.api_key,
-                        "format": "json",
-                        "title": query,
-                        "limit": limit
+                        "format": "normal",  # Use 'normal' instead of 'json'
+                        "title": search_query
                     }
                 )
+                
                 response.raise_for_status()
                 data = response.json()
                 
                 games = []
-                for game_data in data.get("games", []):
-                    game = MobyGamesGame(
-                        game_id=game_data.get("game_id"),
-                        title=game_data.get("title", ""),
-                        description=game_data.get("description"),
-                        release_date=game_data.get("original_release_date"),
-                        platforms=self._extract_platforms(game_data.get("platforms", [])),
-                        genres=self._extract_genres(game_data.get("genres", [])),
-                        developers=self._extract_developers(game_data.get("developers", [])),
-                        publishers=self._extract_publishers(game_data.get("publishers", [])),
-                        cover_image_url=game_data.get("sample_cover", {}).get("image"),
-                        rating=game_data.get("moby_score")
-                    )
-                    games.append(game)
+                # MobyGames returns data as a dictionary with 'games' key
+                game_list = data.get("games", []) if isinstance(data, dict) else (data if isinstance(data, list) else [])
+                
+                # Apply limit manually
+                for game_data in game_list[:limit]:
+                    try:
+                        game = MobyGamesGame(
+                            game_id=game_data.get("game_id"),
+                            title=game_data.get("title", ""),
+                            description=game_data.get("description"),
+                            release_date=game_data.get("original_release_date"),
+                            platforms=self._extract_platforms(game_data.get("platforms", [])),
+                            genres=self._extract_genres(game_data.get("genres", [])),
+                            developers=self._extract_developers(game_data.get("developers", [])),
+                            publishers=self._extract_publishers(game_data.get("publishers", [])),
+                            cover_image_url=game_data.get("sample_cover", {}).get("image"),
+                            rating=game_data.get("moby_score")
+                        )
+                        games.append(game)
+                    except Exception as game_error:
+                        print(f"Error parsing game data: {game_error}")
+                        continue
                 
                 return games
             except Exception as e:
                 print(f"Error searching MobyGames: {e}")
+                if 'response' in locals():
+                    print(f"Response status: {response.status_code}")
+                    print(f"Response text: {response.text}")
                 return []
 
     async def get_game_by_id(self, game_id: int) -> Optional[MobyGamesGame]:
@@ -53,7 +72,7 @@ class MobyGamesService:
                     f"{self.base_url}/games/{game_id}",
                     params={
                         "api_key": self.api_key,
-                        "format": "json"
+                        "format": "normal"  # Use 'normal' instead of 'json'
                     }
                 )
                 response.raise_for_status()
