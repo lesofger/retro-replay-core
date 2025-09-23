@@ -30,7 +30,7 @@ app.include_router(game_router)
 async def read_root():
     return {
         "message": "Welcome to Retro Replay Core API",
-        "version": "2.0.0",
+        "version": "1.0.0",
         "docs": "/docs",
         "redoc": "/redoc"
     }
