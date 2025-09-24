@@ -93,6 +93,30 @@ async def get_platforms():
     platforms = await igdb_service.get_platforms()
     return platforms
 
+@router.get("/game-modes")
+async def get_game_modes():
+    """Get list of available game modes from IGDB"""
+    game_modes = await igdb_service.get_game_modes()
+    return game_modes
+
+@router.get("/genres")
+async def get_genres():
+    """Get list of available genres from IGDB"""
+    genres = await igdb_service.get_genres()
+    return genres
+
+@router.get("/collections")
+async def get_collections():
+    """Get list of available collections/series from IGDB"""
+    collections = await igdb_service.get_collections()
+    return collections
+
+@router.get("/franchises")
+async def get_franchises():
+    """Get list of available franchises from IGDB"""
+    franchises = await igdb_service.get_franchises()
+    return franchises
+
 @router.get("/search/mobygames")
 async def search_mobygames_games(
     query: str = Query(..., description="Search query for games"),

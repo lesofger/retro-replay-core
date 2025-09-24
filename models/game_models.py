@@ -69,6 +69,18 @@ class IGDBGame(BaseModel):
     cover: Optional[int] = None            # IGDB returns cover ID as integer
     rating: Optional[float] = None
     rating_count: Optional[int] = None
+    # New fields
+    game_modes: Optional[List[int]] = None  # Game mode IDs
+    collection: Optional[int] = None        # Series/Collection ID
+    franchise: Optional[int] = None         # Franchise ID
+    storyline: Optional[str] = None         # Story description
+    alternative_names: Optional[List[int]] = None  # Alternative title IDs
+    age_ratings: Optional[List[int]] = None # Age rating IDs
+    websites: Optional[List[int]] = None    # Website/link IDs
+    release_dates: Optional[List[int]] = None  # Release date IDs
+    screenshots: Optional[List[int]] = None # Screenshot IDs
+    artworks: Optional[List[int]] = None    # Artwork IDs
+    videos: Optional[List[int]] = None      # Video IDs
 
 class MobyGamesGame(BaseModel):
     game_id: int
