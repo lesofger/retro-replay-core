@@ -51,9 +51,21 @@ class IGDBService:
             response.raise_for_status()
             return response.json()
 
-    async def search_games(self, query: str, limit: int = 20) -> List[IGDBGame]:
-        """Search for games by name"""
-        search_query = f'search "{query}"; fields id,name,summary,first_release_date,platforms,genres,involved_companies,cover,rating,rating_count; limit {limit};'
+    async def search_games(self, query: str, limit: int = 20, offset: int = 0, platform_id: Optional[int] = None) -> List[IGDBGame]:
+        """Search for games by name with optional platform filtering and pagination"""
+        # Build the search query
+        search_parts = [f'search "{query}"']
+        
+        # Add platform filter if specified
+        if platform_id:
+            search_parts.append(f'where platforms = {platform_id}')
+        
+        # Add fields and pagination
+        search_parts.append('fields id,name,summary,first_release_date,platforms,genres,involved_companies,cover,rating,rating_count')
+        search_parts.append(f'limit {limit}')
+        search_parts.append(f'offset {offset}')
+        
+        search_query = '; '.join(search_parts) + ';'
 
         try:
             results = await self._make_request("games", search_query)

@@ -79,11 +79,19 @@ async def delete_game(game_id: int, db: Session = Depends(get_db)):
 @router.get("/search/igdb")
 async def search_igdb_games(
     query: str = Query(..., description="Search query for games"),
-    limit: int = Query(20, ge=1, le=50)
+    limit: int = Query(20, ge=1, le=50),
+    offset: int = Query(0, ge=0, description="Number of results to skip for pagination"),
+    platform_id: Optional[int] = Query(None, description="Filter by platform ID (use /platforms endpoint to get platform IDs)")
 ):
-    """Search for games on IGDB"""
-    games = await igdb_service.search_games(query, limit)
+    """Search for games on IGDB with optional platform filtering and pagination"""
+    games = await igdb_service.search_games(query, limit, offset, platform_id)
     return games
+
+@router.get("/platforms")
+async def get_platforms():
+    """Get list of available platforms from IGDB"""
+    platforms = await igdb_service.get_platforms()
+    return platforms
 
 @router.get("/search/mobygames")
 async def search_mobygames_games(
