@@ -60,8 +60,8 @@ class IGDBService:
         if platform_id:
             search_parts.append(f'where platforms = {platform_id}')
         
-        # Add fields and pagination
-        search_parts.append('fields id,name,summary,first_release_date,platforms,genres,involved_companies,cover,rating,rating_count,game_modes,collection,franchise,storyline,alternative_names,age_ratings,websites,release_dates,screenshots.url,artworks,videos')
+        # Add fields and pagination - expand platforms, genres, companies, and screenshots
+        search_parts.append('fields id,name,summary,first_release_date,platforms.name,genres,involved_companies,cover,rating,rating_count,game_modes,collection,franchise,storyline,alternative_names,age_ratings,websites,release_dates,screenshots.url,artworks,videos')
         search_parts.append(f'limit {limit}')
         search_parts.append(f'offset {offset}')
         
@@ -284,48 +284,26 @@ class IGDBService:
                 if company.get("publisher", False):
                     publishers.append(company_name)
         
-        # Extract game modes
-        game_modes = []
-        if igdb_game.game_modes:
-            game_modes = [mode.get("name", "Unknown") for mode in igdb_game.game_modes]
+        # Extract game modes (keep as IDs for now since not expanded)
+        game_modes = igdb_game.game_modes or []
         
-        # Extract series/collection
-        series = None
-        if igdb_game.collection:
-            series = igdb_game.collection.get("name", "Unknown")
+        # Extract series/collection (keep as ID for now since not expanded)
+        series = igdb_game.collection
         
-        # Extract franchise
-        franchise = None
-        if igdb_game.franchise:
-            franchise = igdb_game.franchise.get("name", "Unknown")
+        # Extract franchise (keep as ID for now since not expanded)
+        franchise = igdb_game.franchise
         
-        # Extract alternative names
-        alternative_titles = []
-        if igdb_game.alternative_names:
-            alternative_titles = [alt.get("name", "Unknown") for alt in igdb_game.alternative_names]
+        # Extract alternative names (keep as IDs for now since not expanded)
+        alternative_titles = igdb_game.alternative_names or []
         
-        # Extract age ratings
-        age_ratings = []
-        if igdb_game.age_ratings:
-            age_ratings = [f"{rating.get('rating', 'Unknown')} ({rating.get('category', 'Unknown')})" for rating in igdb_game.age_ratings]
+        # Extract age ratings (keep as IDs for now since not expanded)
+        age_ratings = igdb_game.age_ratings or []
         
-        # Extract websites/links
-        links = []
-        if igdb_game.websites:
-            links = [{"category": site.get("category", "Unknown"), "url": site.get("url", "")} for site in igdb_game.websites]
+        # Extract websites/links (keep as IDs for now since not expanded)
+        links = igdb_game.websites or []
         
-        # Extract release dates
-        releases = []
-        if igdb_game.release_dates:
-            for release in igdb_game.release_dates:
-                release_date_str = None
-                if release.get("date"):
-                    release_date_str = datetime.fromtimestamp(release["date"]).strftime("%Y-%m-%d")
-                releases.append({
-                    "date": release_date_str,
-                    "platform": release.get("platform", "Unknown"),
-                    "region": release.get("region", "Unknown")
-                })
+        # Extract release dates (keep as IDs for now since not expanded)
+        releases = igdb_game.release_dates or []
         
         # Extract screenshots and artworks (with 8 image limit)
         images = []
@@ -340,28 +318,20 @@ class IGDBService:
                         "url": f"https://images.igdb.com/igdb/image/upload/t_screenshot_big/{screenshot['url']}.jpg"
                     })
         
-        # Add artworks (fill remaining slots up to 8)
+        # Add artworks (fill remaining slots up to 8) - keep as IDs for now
         remaining_slots = 8 - len(all_images)
         if remaining_slots > 0 and igdb_game.artworks:
-            for artwork in igdb_game.artworks[:remaining_slots]:
-                if artwork.get("url"):
-                    all_images.append({
-                        "type": "artwork",
-                        "url": f"https://images.igdb.com/igdb/image/upload/t_artwork_big/{artwork['url']}.jpg"
-                    })
+            # For now, just add placeholder artworks since we're not expanding them yet
+            for i in range(min(remaining_slots, len(igdb_game.artworks))):
+                all_images.append({
+                    "type": "artwork",
+                    "url": f"https://images.igdb.com/igdb/image/upload/t_artwork_big/{igdb_game.artworks[i]}.jpg"
+                })
         
         images = all_images[:8]  # Ensure max 8 images
         
-        # Extract videos (YouTube URLs)
-        videos = []
-        if igdb_game.videos:
-            for video in igdb_game.videos:
-                if video.get("video_id"):
-                    videos.append({
-                        "name": video.get("name", "Unknown"),
-                        "youtube_url": f"https://www.youtube.com/watch?v={video['video_id']}",
-                        "embed_url": f"https://www.youtube.com/embed/{video['video_id']}"
-                    })
+        # Extract videos (keep as IDs for now since not expanded)
+        videos = igdb_game.videos or []
         
         # Get cover image URL
         cover_image_url = None
