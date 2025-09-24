@@ -78,7 +78,7 @@ class IGDBGame(BaseModel):
     age_ratings: Optional[List[int]] = None # Age rating IDs
     websites: Optional[List[int]] = None    # Website/link IDs
     release_dates: Optional[List[int]] = None  # Release date IDs
-    screenshots: Optional[List[int]] = None # Screenshot IDs
+    screenshots: Optional[List[Dict[str, Any]]] = None # Screenshot objects with id and url
     artworks: Optional[List[int]] = None    # Artwork IDs
     videos: Optional[List[int]] = None      # Video IDs
 

@@ -61,7 +61,7 @@ class IGDBService:
             search_parts.append(f'where platforms = {platform_id}')
         
         # Add fields and pagination
-        search_parts.append('fields id,name,summary,first_release_date,platforms,genres,involved_companies,cover,rating,rating_count,game_modes,collection,franchise,storyline,alternative_names,age_ratings,websites,release_dates,screenshots,artworks,videos')
+        search_parts.append('fields id,name,summary,first_release_date,platforms,genres,involved_companies,cover,rating,rating_count,game_modes,collection,franchise,storyline,alternative_names,age_ratings,websites,release_dates,screenshots.url,artworks,videos')
         search_parts.append(f'limit {limit}')
         search_parts.append(f'offset {offset}')
         
@@ -206,6 +206,190 @@ class IGDBService:
         except Exception as e:
             print(f"Error getting alternative names: {e}")
             return []
+
+    async def convert_simple_game_model(self, igdb_game: IGDBGame) -> Dict[str, Any]:
+        """Convert IGDB game to simple format with only screenshots expanded"""
+        from datetime import datetime
+        
+        # Convert release date from timestamp to datetime
+        release_date = None
+        if igdb_game.first_release_date:
+            release_date = datetime.fromtimestamp(igdb_game.first_release_date)
+        
+        # Extract screenshots (only expanded field)
+        images = []
+        if igdb_game.screenshots:
+            for screenshot in igdb_game.screenshots[:8]:  # Limit to 8 images
+                if screenshot.get("url"):
+                    images.append({
+                        "type": "screenshot",
+                        "url": f"https://images.igdb.com/igdb/image/upload/t_screenshot_big/{screenshot['url']}.jpg"
+                    })
+        
+        # Get cover image URL
+        cover_image_url = None
+        if igdb_game.cover:
+            cover_image_url = f"https://images.igdb.com/igdb/image/upload/t_cover_big/{igdb_game.cover}.jpg"
+        
+        return {
+            "title": igdb_game.name,
+            "description": igdb_game.summary,
+            "storyline": igdb_game.storyline,
+            "release_date": release_date,
+            "platforms": igdb_game.platforms,  # Keep as IDs for now
+            "genres": igdb_game.genres,  # Keep as IDs for now
+            "developers": [],  # Empty for now
+            "publishers": [],  # Empty for now
+            "game_modes": igdb_game.game_modes,  # Keep as IDs for now
+            "series": igdb_game.collection,  # Keep as ID for now
+            "franchise": igdb_game.franchise,  # Keep as ID for now
+            "alternative_titles": igdb_game.alternative_names,  # Keep as IDs for now
+            "age_ratings": igdb_game.age_ratings,  # Keep as IDs for now
+            "links": igdb_game.websites,  # Keep as IDs for now
+            "releases": igdb_game.release_dates,  # Keep as IDs for now
+            "images": images,  # Only screenshots expanded
+            "videos": igdb_game.videos,  # Keep as IDs for now
+            "cover_image_url": cover_image_url,
+            "rating": igdb_game.rating,
+            "igdb_id": igdb_game.id
+        }
+
+    async def convert_expanded_game_model(self, igdb_game: IGDBGame) -> Dict[str, Any]:
+        """Convert expanded IGDB game data to our game model format"""
+        from datetime import datetime
+        
+        # Convert release date from timestamp to datetime
+        release_date = None
+        if igdb_game.first_release_date:
+            release_date = datetime.fromtimestamp(igdb_game.first_release_date)
+        
+        # Extract platform names
+        platforms = []
+        if igdb_game.platforms:
+            platforms = [platform.get("name", "Unknown") for platform in igdb_game.platforms]
+        
+        # Extract genre names
+        genres = []
+        if igdb_game.genres:
+            genres = [genre.get("name", "Unknown") for genre in igdb_game.genres]
+        
+        # Extract company names
+        developers = []
+        publishers = []
+        if igdb_game.involved_companies:
+            for company in igdb_game.involved_companies:
+                company_name = company.get("name", "Unknown")
+                if company.get("developer", False):
+                    developers.append(company_name)
+                if company.get("publisher", False):
+                    publishers.append(company_name)
+        
+        # Extract game modes
+        game_modes = []
+        if igdb_game.game_modes:
+            game_modes = [mode.get("name", "Unknown") for mode in igdb_game.game_modes]
+        
+        # Extract series/collection
+        series = None
+        if igdb_game.collection:
+            series = igdb_game.collection.get("name", "Unknown")
+        
+        # Extract franchise
+        franchise = None
+        if igdb_game.franchise:
+            franchise = igdb_game.franchise.get("name", "Unknown")
+        
+        # Extract alternative names
+        alternative_titles = []
+        if igdb_game.alternative_names:
+            alternative_titles = [alt.get("name", "Unknown") for alt in igdb_game.alternative_names]
+        
+        # Extract age ratings
+        age_ratings = []
+        if igdb_game.age_ratings:
+            age_ratings = [f"{rating.get('rating', 'Unknown')} ({rating.get('category', 'Unknown')})" for rating in igdb_game.age_ratings]
+        
+        # Extract websites/links
+        links = []
+        if igdb_game.websites:
+            links = [{"category": site.get("category", "Unknown"), "url": site.get("url", "")} for site in igdb_game.websites]
+        
+        # Extract release dates
+        releases = []
+        if igdb_game.release_dates:
+            for release in igdb_game.release_dates:
+                release_date_str = None
+                if release.get("date"):
+                    release_date_str = datetime.fromtimestamp(release["date"]).strftime("%Y-%m-%d")
+                releases.append({
+                    "date": release_date_str,
+                    "platform": release.get("platform", "Unknown"),
+                    "region": release.get("region", "Unknown")
+                })
+        
+        # Extract screenshots and artworks (with 8 image limit)
+        images = []
+        all_images = []
+        
+        # Add screenshots
+        if igdb_game.screenshots:
+            for screenshot in igdb_game.screenshots:
+                if screenshot.get("url"):
+                    all_images.append({
+                        "type": "screenshot",
+                        "url": f"https://images.igdb.com/igdb/image/upload/t_screenshot_big/{screenshot['url']}.jpg"
+                    })
+        
+        # Add artworks (fill remaining slots up to 8)
+        remaining_slots = 8 - len(all_images)
+        if remaining_slots > 0 and igdb_game.artworks:
+            for artwork in igdb_game.artworks[:remaining_slots]:
+                if artwork.get("url"):
+                    all_images.append({
+                        "type": "artwork",
+                        "url": f"https://images.igdb.com/igdb/image/upload/t_artwork_big/{artwork['url']}.jpg"
+                    })
+        
+        images = all_images[:8]  # Ensure max 8 images
+        
+        # Extract videos (YouTube URLs)
+        videos = []
+        if igdb_game.videos:
+            for video in igdb_game.videos:
+                if video.get("video_id"):
+                    videos.append({
+                        "name": video.get("name", "Unknown"),
+                        "youtube_url": f"https://www.youtube.com/watch?v={video['video_id']}",
+                        "embed_url": f"https://www.youtube.com/embed/{video['video_id']}"
+                    })
+        
+        # Get cover image URL
+        cover_image_url = None
+        if igdb_game.cover:
+            cover_image_url = f"https://images.igdb.com/igdb/image/upload/t_cover_big/{igdb_game.cover}.jpg"
+        
+        return {
+            "title": igdb_game.name,
+            "description": igdb_game.summary,
+            "storyline": igdb_game.storyline,
+            "release_date": release_date,
+            "platforms": platforms,
+            "genres": genres,
+            "developers": developers,
+            "publishers": publishers,
+            "game_modes": game_modes,
+            "series": series,
+            "franchise": franchise,
+            "alternative_titles": alternative_titles,
+            "age_ratings": age_ratings,
+            "links": links,
+            "releases": releases,
+            "images": images,  # Screenshots and artworks combined, max 8
+            "videos": videos,  # YouTube URLs
+            "cover_image_url": cover_image_url,
+            "rating": igdb_game.rating,
+            "igdb_id": igdb_game.id
+        }
 
     async def convert_to_game_model(self, igdb_game: IGDBGame) -> Dict[str, Any]:
         """Convert IGDB game to our game model format"""
