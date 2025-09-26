@@ -25,14 +25,47 @@ class IGDBGame(BaseModel):
     artworks: Optional[List[int]] = None
     videos: Optional[List[int]] = None
 
+class MobyGamesAlternateTitle(BaseModel):
+    description: str
+    title: str
+
+class MobyGamesGenre(BaseModel):
+    genre_category: str
+    genre_category_id: int
+    genre_id: int
+    genre_name: str
+
+class MobyGamesPlatform(BaseModel):
+    first_release_date: Optional[str] = None
+    platform_id: int
+    platform_name: str
+
+class MobyGamesCover(BaseModel):
+    height: int
+    image: str
+    platforms: List[str]
+    thumbnail_image: str
+    width: int
+
+class MobyGamesScreenshot(BaseModel):
+    caption: str
+    height: int
+    image: str
+    thumbnail_image: str
+    width: int
+
 class MobyGamesGame(BaseModel):
     game_id: int
     title: str
     description: Optional[str] = None
-    release_date: Optional[str] = None
-    platforms: Optional[List[str]] = None
-    genres: Optional[List[str]] = None
-    developers: Optional[List[str]] = None
-    publishers: Optional[List[str]] = None
-    cover_image_url: Optional[str] = None
-    rating: Optional[float] = None
+    alternate_titles: Optional[List[MobyGamesAlternateTitle]] = None
+    genres: Optional[List[MobyGamesGenre]] = None
+    platforms: Optional[List[MobyGamesPlatform]] = None
+    developers: Optional[List[Dict[str, Any]]] = None
+    publishers: Optional[List[Dict[str, Any]]] = None
+    sample_cover: Optional[MobyGamesCover] = None
+    sample_screenshots: Optional[List[MobyGamesScreenshot]] = None
+    moby_score: Optional[float] = None
+    num_votes: Optional[int] = None
+    moby_url: Optional[str] = None
+    official_url: Optional[str] = None

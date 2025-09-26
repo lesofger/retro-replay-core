@@ -97,3 +97,86 @@ async def get_mobygames_game(mobygames_id: int):
         return game
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/mobygames/{mobygames_id}/import")
+async def import_mobygames_game_to_woocommerce(mobygames_id: int, price: float = 29.99):
+    """Import a MobyGames game directly to WooCommerce as a product"""
+    try:
+        # Get game from MobyGames
+        game = await mobygames_service.get_game_by_id(mobygames_id)
+        if not game:
+            raise HTTPException(status_code=404, detail="Game not found on MobyGames")
+        
+        # Convert to WooCommerce product format
+        product_data = mobygames_service.convert_to_woocommerce_product(game, price)
+        
+        # Import to WooCommerce
+        from services.woocommerce_service import WooCommerceService
+        woocommerce_service = WooCommerceService()
+        result = await woocommerce_service.create_product(product_data)
+        
+        return {
+            "success": True,
+            "message": f"Game '{game.title}' imported successfully to WooCommerce",
+            "mobygames_id": mobygames_id,
+            "woocommerce_product_id": result.get("id"),
+            "product_data": result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/mobygames/bulk-import")
+async def bulk_import_mobygames_games(
+    mobygames_ids: List[int],
+    price: float = 29.99
+):
+    """Import multiple MobyGames games to WooCommerce"""
+    results = []
+    
+    for mobygames_id in mobygames_ids:
+        try:
+            # Get game from MobyGames
+            game = await mobygames_service.get_game_by_id(mobygames_id)
+            if not game:
+                results.append({
+                    "success": False,
+                    "mobygames_id": mobygames_id,
+                    "error": "Game not found on MobyGames"
+                })
+                continue
+            
+            # Convert to WooCommerce product format
+            product_data = mobygames_service.convert_to_woocommerce_product(game, price)
+            
+            # Import to WooCommerce
+            from services.woocommerce_service import WooCommerceService
+            woocommerce_service = WooCommerceService()
+            result = await woocommerce_service.create_product(product_data)
+            
+            results.append({
+                "success": True,
+                "mobygames_id": mobygames_id,
+                "game_title": game.title,
+                "woocommerce_product_id": result.get("id"),
+                "message": "Imported successfully"
+            })
+        except Exception as e:
+            results.append({
+                "success": False,
+                "mobygames_id": mobygames_id,
+                "error": str(e)
+            })
+    
+    successful = sum(1 for r in results if r["success"])
+    failed = len(results) - successful
+    
+    return {
+        "success": True,
+        "message": f"Bulk import completed: {successful} successful, {failed} failed",
+        "results": results,
+        "summary": {
+            "total": len(results),
+            "successful": successful,
+            "failed": failed
+        }
+    }
