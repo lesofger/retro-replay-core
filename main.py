@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.game_routes import router as game_router
 from api.woocommerce_routes import router as woocommerce_router
+from api.import_routes import router as import_router
 from config import settings
 
 app = FastAPI(
@@ -22,6 +23,7 @@ app.add_middleware(
 # Include routers
 app.include_router(game_router)
 app.include_router(woocommerce_router)
+app.include_router(import_router)
 
 @app.get("/")
 async def read_root():
