@@ -2,7 +2,7 @@ import httpx
 import asyncio
 from typing import List, Optional, Dict, Any
 from config import settings
-from models.game_models import MobyGamesGame
+from models.external_api_models import MobyGamesGame
 
 class MobyGamesService:
     def __init__(self):

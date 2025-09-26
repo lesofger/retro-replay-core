@@ -175,7 +175,6 @@ async def bulk_create_game_products(games: List[GameToProductRequest]):
             
             # Create the product
             result = await woocommerce_service.create_product(product_data)
-            print(result.ok)
             
             results.append({
                 "success": True,

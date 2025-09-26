@@ -2,7 +2,7 @@ import httpx
 import asyncio
 from typing import List, Optional, Dict, Any
 from config import settings
-from models.game_models import IGDBGame
+from models.external_api_models import IGDBGame
 
 class IGDBService:
     def __init__(self):

@@ -1,17 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database.database import engine
-from database.models import Base
 from api.game_routes import router as game_router
 from api.woocommerce_routes import router as woocommerce_router
 from config import settings
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(
     title="Retro Replay Core",
-    description="A FastAPI backend for managing your game library with data from IGDB and MobyGames",
+    description="A FastAPI backend for managing retro game products in WooCommerce with data from IGDB and MobyGames",
     version="1.0.0"
 )
 
