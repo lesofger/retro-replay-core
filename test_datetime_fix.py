@@ -1,5 +1,5 @@
 """
-Quick test to verify datetime serialization fix
+Quick test to verify dates serialization fix
 """
 
 import asyncio
