@@ -32,7 +32,7 @@ async def test_datetime_serialization():
         if 'genres' in result:
             print(f"Genres: {result['genres']}")
         
-        print("\nJSON serialization successful!")
+        print("\nJSONs serialization successful!")
         
     except Exception as e:
         print(f"❌ Datetime serialization test failed: {e}")
