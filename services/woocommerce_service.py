@@ -122,8 +122,15 @@ class WooCommerceService:
         if publisher:
             product_description += f"<p><strong>Publisher:</strong> {publisher}</p>"
         
+        # Handle release date formatting
+        release_date_str = ""
         if release_date:
-            product_description += f"<p><strong>Release Date:</strong> {release_date}</p>"
+            # Handle both string and datetime objects
+            if hasattr(release_date, 'strftime'):
+                release_date_str = release_date.strftime("%Y-%m-%d")
+            else:
+                release_date_str = str(release_date)
+            product_description += f"<p><strong>Release Date:</strong> {release_date_str}</p>"
         
         # Create short description
         short_description = f"Retro gaming classic: {title}"
@@ -178,7 +185,7 @@ class WooCommerceService:
                 },
                 {
                     "key": "_game_release_date",
-                    "value": release_date
+                    "value": release_date_str if release_date else ""
                 }
             ]
         }

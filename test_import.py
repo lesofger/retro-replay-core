@@ -37,6 +37,12 @@ async def test_import_api():
             else:
                 print(f"❌ Quick import failed: {response.status_code}")
                 print(f"   Error: {response.text}")
+                # Try to parse error details
+                try:
+                    error_detail = response.json()
+                    print(f"   Error detail: {error_detail}")
+                except:
+                    pass
         except Exception as e:
             print(f"❌ Quick import error: {e}")
         

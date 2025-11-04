@@ -197,7 +197,7 @@ class MobyGamesService:
         return {
             "title": mobygames_game.title,
             "description": clean_description,
-            "release_date": release_date,
+            "release_date": release_date.isoformat() if release_date else None,
             "platforms": self._extract_platform_names(mobygames_game.platforms or []),
             "genres": self._extract_genre_names(mobygames_game.genres or []),
             "developers": self._extract_developer_names(mobygames_game.developers or []),
