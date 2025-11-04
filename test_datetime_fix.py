@@ -8,7 +8,7 @@ from services.import_service import ImportService
 
 async def test_datetime_serialization():
     """Test that datetime objects are properly serialized"""
-    print("🧪 Testing datetime serialization fix...")
+    print("🧪 Testing dates serialization fix...")
     
     import_service = ImportService()
     
