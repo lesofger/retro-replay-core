@@ -35,7 +35,7 @@ async def test_datetime_serialization():
         print("\nJSONs serialization successful!")
         
     except Exception as e:
-        print(f"❌ Datetime serialization test failed: {e}")
+        print(f"❌ Date serialization test failed: {e}")
         import traceback
         traceback.print_exc()
 
