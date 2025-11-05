@@ -70,7 +70,7 @@ class MobyGamesService:
                 
                 return self._parse_game_data(game_data)
             except Exception as e:
-                print(f"Error getting MobyGames game by ID: {e}")
+                print(f"Error in getting MobyGames game by ID: {e}")
                 return None
 
     def _parse_game_data(self, game_data: Dict[str, Any]) -> MobyGamesGame:
