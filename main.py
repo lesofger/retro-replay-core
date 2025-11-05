@@ -7,7 +7,7 @@ from config import settings
 
 app = FastAPI(
     title="Retro Replay Core",
-    description="A FastAPI backend for managing retro game products in WooCommerce with data from IGDB and MobyGames",
+    description="A FastAPIa backend for managing retro game products in WooCommerce with data from IGDB and MobyGames",
     version="1.0.0"
 )
 
