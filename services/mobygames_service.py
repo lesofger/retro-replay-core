@@ -51,7 +51,7 @@ class MobyGamesService:
                 print(f"Errors in searching MobyGames: {e}")
                 if 'response' in locals():
                     print(f"Responses status: {response.status_code}")
-                    print(f"Response text: {response.text}")
+                    print(f"Response texts: {response.text}")
                 return []
 
     async def get_game_by_id(self, game_id: int) -> Optional[MobyGamesGame]:
