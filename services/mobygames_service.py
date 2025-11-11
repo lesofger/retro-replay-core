@@ -147,7 +147,7 @@ class MobyGamesService:
         )
 
     def _extract_platform_names(self, platforms_data: List[MobyGamesPlatform]) -> List[str]:
-        """Extract platform names from MobyGames platform objects"""
+        """Extract platform name from MobyGames platform objects"""
         return [platform.platform_name for platform in platforms_data if platform.platform_name]
 
     def _extract_genre_names(self, genres_data: List[MobyGamesGenre]) -> List[str]:
