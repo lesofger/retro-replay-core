@@ -50,7 +50,7 @@ class MobyGamesService:
             except Exception as e:
                 print(f"Errors in searching MobyGames: {e}")
                 if 'response' in locals():
-                    print(f"Response status: {response.status_code}")
+                    print(f"Responses status: {response.status_code}")
                     print(f"Response text: {response.text}")
                 return []
 
