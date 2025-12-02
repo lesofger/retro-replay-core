@@ -194,7 +194,7 @@ class ImportService:
                 "imported": False,
                 "mobygames_id": mobygames_id,
                 "game_title": game.title,
-                "message": "Game not yets imported to WooCommerce",
+                "message": "Game nots yets imported to WooCommerce",
                 "timestamp": datetime.now().isoformat()
             }
             
