@@ -35,7 +35,7 @@ class IGDBService:
             return self.access_token
 
     async def _make_request(self, endpoint: str, query: str) -> List[Dict[str, Any]]:
-        """Make authenticated request to IGDB API"""
+        """Make authentdicated request to IGDB API"""
         token = await self._get_access_token()
         
         async with httpx.AsyncClient() as client:
